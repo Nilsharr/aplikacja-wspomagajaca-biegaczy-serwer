@@ -1,56 +1,84 @@
-var db = require("../../database/DatabaseService");
+const db = require("../../database/DatabaseService");
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // for tests
 exports.getUsers = async (req, res) => {
     const users = await db.instance.User.findAsync({});
 
     if (users) {
-        res.status(200).json(users);
+        return res.status(200).json(users);
     }
-    else {
-        res.send(404);
-    }
+
+    return res.send(404);
+};
+
+exports.getMe = async (req, res) => {
+    return res.status(200).send(req.user);
 };
 
 // need to validate password here i guess
 exports.createUser = async (req, res) => {
     if (Object.keys(req.body).length === 0) {
-        res.sendStatus(400);
-        return;
+        return res.sendStatus(400);
+
     }
-    var user = new db.instance.User(req.body);
+    if (req.body.password.length < 6) {
+        return res.sendStatus(422);
+    }
 
-    const token = await user.generateAuthToken();
+    const user = new db.instance.User(req.body);
 
-    user.save(function (err) {
+    await user.saveAsync({ if_not_exist: true }, async (err) => {
         if (err) {
             console.log(err);
-            res.sendStatus(422);
-            return;
+            return res.sendStatus(422);
         }
-        res.status(201).send({ user, token });
-        console.log("saved");
+        // if user exists
+        if (user.isModified()) {
+            console.log("user exists");
+            return res.sendStatus(409);
+        }
+        else {
+            const token = await generateAuthToken(user);
+            console.log("saved");
+            return res.status(201).send({ user, token });
+        }
     });
 };
 
 
 exports.login = async (req, res) => {
+    if (Object.keys(req.body).length === 0) {
+        return res.sendStatus(400);
+    }
+
     const { email, password } = req.body;
-    const user = db.instance.User.findOneAsync({ email: email });
+    const user = await db.instance.User.findOneAsync({ email: email });
     if (user) {
-        console.log(user.login + ', ' + user.email);
-        const isPasswordMatch = await bcrypt.compare(password, user.password);
-        if (!isPasswordMatch) {
-            res.send(401);
+        if (await bcrypt.compare(password, user.password)) {
+            const token = await generateAuthToken(user);
+            return res.status(200).json({ user, token });
+        } else {
+            return res.sendStatus(401);
         }
-        res.status(200).json({ User: user });
     }
     else {
-        res.send(404);
+        return res.sendStatus(401);
     }
 }
 
 exports.logout = (req, res) => {
 
+}
+
+async function generateAuthToken(instance) {
+    if (!(instance instanceof db.instance.User)) {
+        throw new Error("");
+    }
+    const token = jwt.sign({ _id: instance.email }, process.env.JWT_KEY);
+    console.log(token);
+    instance.tokens = !instance.tokens ? [token] : instance.tokens.concat(token);
+    await instance.saveAsync();
+    return token;
 }

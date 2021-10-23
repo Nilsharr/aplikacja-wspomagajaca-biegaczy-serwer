@@ -21,9 +21,6 @@ module.exports = {
         password: {
             type: "text",
             rule: {
-                // validates hash instead of password
-                //validator: value => valid.isLength(value, { min: 6, max: undefined }),
-                //message: "Password is too short or empty",
                 required: true
             }
         },
@@ -36,19 +33,21 @@ module.exports = {
     },
     key: ["email"],
     // async/await ...
-    before_save: function (instance, options) {
-        //instance.password = await bcrypt.hash(instance.password, 10);
-        instance.password = bcrypt.hashSync(instance.password, 10);
+    before_save: (instance, options) => {
+        if (instance.isModified('password')) {
+            //instance.password = await bcrypt.hash(instance.password, 10);
+            instance.password = bcrypt.hashSync(instance.password, 10);
+        }
         return true;
     },
     methods: {
-        generateAuthToken: async () => {
-            // id??
-            const token = jwt.sign({ _id: this._id }, process.env.JWT_KEY);
-            // this.tokens = this.tokens.concat({ token });
-            // to change - concat
-            this.tokens = [token];
+        // todo
+        // for some reason this(instance) is empty
+        /*generateAuthToken: () => {
+            const token = jwt.sign({ _email: this.email }, process.env.JWT_KEY);
+            this.tokens = !this.tokens ? [token] : this.tokens.concat(token);
+            await this.saveAsync();
             return token;
-        },
+        },*/
     },
 }
