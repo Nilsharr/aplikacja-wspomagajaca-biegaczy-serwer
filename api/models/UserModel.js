@@ -1,5 +1,5 @@
-const valid = require('validator')
-const bcrypt = require('bcryptjs')
+const valid = require('validator');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 module.exports = {
@@ -42,8 +42,7 @@ module.exports = {
         return true;
     },
     methods: {
-
-        generateAuthToken: async function () {
+        generateAuthToken: async () => {
             // id??
             const token = jwt.sign({ _id: this._id }, process.env.JWT_KEY);
             // this.tokens = this.tokens.concat({ token });
@@ -52,16 +51,4 @@ module.exports = {
             return token;
         },
     },
-}
-
-exports.findByCredentials = async (email, password) => {
-    const user = await User.findOneAsync({ email: email });
-    if (!user) {
-        throw new Error({ error: 'Invalid login credentiasl' });
-    }
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
-    if (!isPasswordMatch) {
-        throw new Error({ error: 'Invalid login credentiasl' });
-    }
-    return user;
 }

@@ -1,96 +1,56 @@
 var db = require("../../database/DatabaseService");
+const bcrypt = require('bcryptjs');
 
-exports.getUsers = (req, res) => {
-    db.instance.User.findAsync({}).then(function (users) {
-        if (users !== undefined) {
-            res.status(200).json({ Users: users });
-        }
-        else {
-            res.send(404);
-        }
+// for tests
+exports.getUsers = async (req, res) => {
+    const users = await db.instance.User.findAsync({});
 
-    }).catch(function (err) {
-        res.status(500);
-        console.log(err);
-    })
-};
-
-exports.getMe = (req, res) => {
-
-}
-
-exports.getUser = (req, res) => {
-    if (req.params.login === undefined) {
-        res.send(400);
+    if (users) {
+        res.status(200).json(users);
     }
-    db.instance.User.findOneAsync({ login: req.params.login }).then(function (user) {
-        console.log(user);
-        if (user !== undefined) {
-            console.log(user.login + ', ' + user.email);
-            res.status(200).json({ User: user });
-        }
-        else {
-            res.send(404);
-        }
-
-    }).catch(function (err) {
-        res.status(500);
-        console.log(err);
-    })
+    else {
+        res.send(404);
+    }
 };
 
 // need to validate password here i guess
 exports.createUser = async (req, res) => {
-    if (req.body === {}) {
-        res.send(400);
+    if (Object.keys(req.body).length === 0) {
+        res.sendStatus(400);
+        return;
     }
-    console.log(req.body);
-    var user = new db.instance.User({
-        login: req.body.User.login,
-        email: req.body.User.email,
-        password: req.body.User.password
-    });
+    var user = new db.instance.User(req.body);
 
     const token = await user.generateAuthToken();
 
     user.save(function (err) {
         if (err) {
             console.log(err);
-            res.send(422);
+            res.sendStatus(422);
             return;
         }
-
-        res.location('/api/users/' + user.login).status(201).send({ user, token });
+        res.status(201).send({ user, token });
         console.log("saved");
     });
-
-    console.log(user.password);
-    console.log(user.login);
 };
 
 
 exports.login = async (req, res) => {
-
     const { email, password } = req.body;
-    const user = await db.instance.User.findByCredentials(email, password);
-    console.log(user);
-    res.sendStatus(200);
+    const user = db.instance.User.findOneAsync({ email: email });
+    if (user) {
+        console.log(user.login + ', ' + user.email);
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        if (!isPasswordMatch) {
+            res.send(401);
+        }
+        res.status(200).json({ User: user });
+    }
+    else {
+        res.send(404);
+    }
 }
 
 exports.logout = (req, res) => {
 
 }
-
-exports.updateUser = (req, res) => {
-    if (req.params.login === undefined) {
-        res.send(400);
-    }
-    res.sendStatus(200);
-};
-
-exports.deleteUser = (req, res) => {
-    if (req.params.login === undefined) {
-        res.send(400);
-    }
-    res.sendStatus(200);
-};
