@@ -20,6 +20,7 @@ exports.getMe = async (req, res) => {
     return res.status(200).send(req.user);
 };
 
+
 exports.createUser = async (req, res) => {
     if (Object.keys(req.body).length === 0) {
         return res.sendStatus(400);
@@ -51,30 +52,6 @@ exports.login = async (req, res) => {
         return res.status(200).send({ user, token });
     }
     catch (error) {
-        console.log(error);
-        return res.sendStatus(500);
-    }
-}
-
-exports.logout = async (req, res) => {
-    try {
-        req.user.tokens = req.user.tokens.filter(token => {
-            return token.token !== req.token;
-        });
-        await req.user.save();
-        return res.sendStatus(200);
-    } catch (error) {
-        console.log(error);
-        return res.sendStatus(500);
-    }
-}
-
-exports.logoutAll = async (req, res) => {
-    try {
-        req.user.tokens = [];
-        await req.user.save();
-        return res.sendStatus(200);
-    } catch (error) {
         console.log(error);
         return res.sendStatus(500);
     }

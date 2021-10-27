@@ -12,8 +12,4 @@ module.exports = (app) => {
     app.route('/users').post(users.createUser);
 
     app.route('/users/login').post(users.login);
-
-    app.route('/users/me/logout').post(auth, users.logout);
-
-    app.route('/users/me/logoutall').post(auth, users.logoutAll);
 };
