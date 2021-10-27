@@ -6,6 +6,16 @@ exports.getUsers = async (req, res) => {
     return res.status(200).json(users);
 };
 
+exports.getTest = async (req, res) => {
+    var user = new User({
+        login: 'uelston2',
+        email: 'gbravey2@quantcast.com',
+        password: 'Jzv9slTf'
+    });
+
+    return res.status(200).json([user, user]);
+};
+
 exports.getMe = async (req, res) => {
     return res.status(200).send(req.user);
 };

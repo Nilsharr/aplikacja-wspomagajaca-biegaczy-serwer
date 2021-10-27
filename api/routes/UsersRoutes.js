@@ -5,6 +5,7 @@ module.exports = (app) => {
 
     // test only
     app.route('/users').get(users.getUsers);
+    app.route('/test').get(users.getTest);
 
     app.route('/users/me').get(auth, users.getMe);
 

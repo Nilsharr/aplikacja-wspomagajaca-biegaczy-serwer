@@ -1,6 +1,7 @@
 require("./database/DatabaseService");
 const routes = require("./api/routes/UsersRoutes");
 const express = require("express");
+const port = process.env.PORT || 3000
 
 const app = express();
 
@@ -8,6 +9,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 routes(app);
 
-app.listen(process.env.PORT || 3000, () => { console.log("Server running on port " + process.env.PORT || 3000) });
+module.exports = app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
 
 
