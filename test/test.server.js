@@ -22,11 +22,11 @@ describe('User api', () => {
     });
 });
 
-afterEach(done => {
+/*afterEach(done => {
     User.collection.drop().then(() => { }).catch(() => {
         console.warn('collection may not exist');
     });
-});
+});*/
 
 it('should get all users on /test GET', done => {
     chai.request(server).get('/test').end((err, res) => {
