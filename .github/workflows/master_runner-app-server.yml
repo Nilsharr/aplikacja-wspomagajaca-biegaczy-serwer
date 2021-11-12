@@ -52,5 +52,5 @@ jobs:
         with:
           app-name: 'runner-app-server'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C4A592288313404DB1957B7F66C9EAAC }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_022C93BA13F94ADBBE316C477A752DCA }}
           package: .
