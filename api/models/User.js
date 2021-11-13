@@ -21,6 +21,8 @@ const userSchema = mongoose.Schema({
     required: true,
     minLength: 6,
   },
+  resetPasswordCode: String,
+  resetPasswordExpires: Date
 });
 
 userSchema.pre("save", async function (next) {
@@ -35,6 +37,15 @@ userSchema.methods.generateAuthToken = async function () {
   return token;
 };
 
+userSchema.methods.generatePasswordResetCode = async function () {
+  const expires = new Date();
+  expires.setHours(expires.getHours() + process.env.RESET_PASSWORD_CODE_EXPIRATION_HOURS);
+  // generate 6 digit code
+  this.resetPasswordCode = Math.floor(Math.random() * (999999 - 100000) + 100000);
+  this.resetPasswordExpires = expires;
+  await this.save();
+};
+
 userSchema.statics.findByCredentials = async (login, email, password) => {
   const user = await User.findOne({ $or: [{ login }, { email }] });
   if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -43,7 +54,7 @@ userSchema.statics.findByCredentials = async (login, email, password) => {
   return user;
 };
 
-// CREATE USER VALIDATION METHOD
+// User validation
 userSchema.statics.createValidation = async (
   login,
   email,
@@ -61,13 +72,13 @@ userSchema.statics.createValidation = async (
     errorMessages.passDontMatch = "Passwords must match!";
   }
 
-  // Does login is unique
+  // Is the login unique
   const loginFailure = await User.findOne({ login });
   if (loginFailure) {
     errorMessages.loginExists = "Such login already exists";
   }
 
-  // Does email is unique
+  // Is the email unique
   const emailFailure = await User.findOne({ email });
   if (emailFailure) {
     errorMessages.emailExists = "Such email already exists";
@@ -81,7 +92,7 @@ userSchema.statics.createValidation = async (
   return errorMessages;
 };
 
-// LOGIN VALIDATION METHOD
+// Login validation
 userSchema.statics.validateLogin = async (login, password) => {
   const errorMessages = {};
   let user = null;
@@ -95,13 +106,13 @@ userSchema.statics.validateLogin = async (login, password) => {
   }
 
   if (!user) {
-    // User doesnt exist
+    // User doesn't exist
     errorMessages.loginInvalid = "Invalid login credentials";
   } else {
     const match = await bcrypt.compare(password, user.password);
-    // Passwords doesnt match
+    // Passwords doesn't match
     if (!match) {
-      errorMessages.passwordInvalid = "Invalid password";
+      errorMessages.passwordInvalid = "Invalid login credentials";
     }
   }
 
