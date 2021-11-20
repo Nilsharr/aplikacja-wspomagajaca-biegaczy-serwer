@@ -113,10 +113,11 @@ exports.forgotPassword = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
     const code = req.params.code;
-    if (!code) {
+    const email = req.params.email;
+    if (!code || !email) {
         return res.status(400).send({ error: "Invalid data" });
     }
-    const user = await User.findOne({ resetPasswordCode: code, resetPasswordExpires: { $gt: new Date() } });
+    const user = await User.findOne({ email: email, resetPasswordCode: code, resetPasswordExpires: { $gt: new Date() } });
     if (!user) {
         return res.status(422).send({ error: "Invalid or expired code" });
     }
