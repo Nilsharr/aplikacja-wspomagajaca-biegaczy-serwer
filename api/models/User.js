@@ -37,6 +37,11 @@ userSchema.methods.generateAuthToken = async function () {
   return token;
 };
 
+userSchema.methods.generateTempAuthToken = async function () {
+  const token = jwt.sign({ _id: this._id }, process.env.JWT_KEY, { expiresIn: '1h' });
+  return token;
+};
+
 userSchema.methods.generatePasswordResetCode = async function () {
   const expires = new Date();
   expires.setHours(expires.getHours() + process.env.RESET_PASSWORD_CODE_EXPIRATION_HOURS);
@@ -54,6 +59,18 @@ userSchema.statics.findByCredentials = async (login, email, password) => {
   return user;
 };
 
+userSchema.statics.validatePassword = (password, confirmPassword) => {
+  const passErrors = {};
+  if (password.length < 6) {
+    passErrors.passTooShort =
+      "Your password must have at least 6 characters";
+  }
+  if (password !== confirmPassword) {
+    passErrors.passDontMatch = "Passwords must match!";
+  }
+  return passErrors;
+}
+
 // User validation
 userSchema.statics.createValidation = async (
   login,
@@ -61,16 +78,9 @@ userSchema.statics.createValidation = async (
   password,
   confirmPassword
 ) => {
-  const errorMessages = {};
 
-  // Password validation
-  if (password.length < 6) {
-    errorMessages.passTooShort =
-      "Your password must have at least 6 characters";
-  }
-  if (password !== confirmPassword) {
-    errorMessages.passDontMatch = "Passwords must match!";
-  }
+  const passErrors = User.validatePassword(password, confirmPassword);
+  const errorMessages = { ...passErrors };
 
   // Is the login unique
   const loginFailure = await User.findOne({ login });

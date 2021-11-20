@@ -1,7 +1,6 @@
 const _ = require("lodash");
 const User = require("../models/User");
 const Email = require("../../mails/Email");
-const mail = require('email-templates');
 
 // for tests
 exports.getUsers = async (req, res) => {
@@ -78,16 +77,15 @@ exports.changePassword = async (req, res) => {
     if (!password || !confirmPassword) {
         return res.status(400).send({ error: "Invalid data" });
     }
-    if (password.length < 6) {
-        return res.status(422).send({ error: "Your password must have at least 6 characters" });
+    const errorMessages = User.validatePassword(password, confirmPassword);
+    if (_.isEmpty(errorMessages)) {
+        const user = req.user;
+        user.password = password;
+        await user.save();
+        return res.sendStatus(200);
+    } else {
+        return res.status(422).send({ errorMessages });
     }
-    if (password !== confirmPassword) {
-        return res.status(422).send({ error: "Passwords don't match" });
-    }
-    const user = req.user;
-    user.password = password;
-    await user.save();
-    return res.sendStatus(200);
 }
 
 exports.forgotPassword = async (req, res) => {
@@ -122,5 +120,6 @@ exports.resetPassword = async (req, res) => {
     if (!user) {
         return res.status(422).send({ error: "Invalid or expired code" });
     }
-    return res.sendStatus(200);
+    const token = await user.generateTempAuthToken();
+    return res.status(200).send(token);
 }
