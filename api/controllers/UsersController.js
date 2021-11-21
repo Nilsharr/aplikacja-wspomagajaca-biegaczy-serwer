@@ -122,5 +122,5 @@ exports.resetPassword = async (req, res) => {
         return res.status(422).send({ error: "Invalid or expired code" });
     }
     const token = await user.generateTempAuthToken();
-    return res.status(200).send(token);
+    return res.status(200).send({ token });
 }
