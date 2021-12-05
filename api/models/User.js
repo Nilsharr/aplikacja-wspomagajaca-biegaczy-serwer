@@ -3,6 +3,13 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 
+const statistics = new mongoose.Schema({
+  totalTime: { type: Number, required: true },
+  distance: { type: Number, required: true },
+  date: { type: Date, default: new Date(), },
+  //route: String //todo
+});
+
 const userSchema = mongoose.Schema({
   login: {
     type: String,
@@ -21,6 +28,14 @@ const userSchema = mongoose.Schema({
     required: true,
     minLength: 6,
   },
+  admin: { type: Boolean, default: false },
+  gender: String,
+  height: Number,
+  weight: Number,
+  avatar: Buffer, //todo
+  statistics: [statistics],
+
+  events: [mongoose.ObjectId],
   resetPasswordCode: String,
   resetPasswordExpires: Date
 });
