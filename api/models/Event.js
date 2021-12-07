@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const route = require("../models/Route");
 
 Date.prototype.addDays = function (days) {
     var date = new Date(this.valueOf());
@@ -19,22 +20,16 @@ const eventSchema = mongoose.Schema({
         trim: true,
     },
     details: String,
-    address: {
-        type: address,
-        required: true
-    },
-    date: {
-        type: Date,
-        required: true,
-    },
+    address: { type: address, required: true },
+    date: { type: Date, required: true },
     maxParticipants: {
         type: Number,
         required: true,
         min: 1,
         max: 999999
     },
-    participants: [mongoose.ObjectId],
-    //route: String //todo
+    participants: [mongoose.Types.ObjectId],
+    route: { type: [route], required: true }
     /*expireAt: {
         type: Date,
         default: new Date().addDays(7)

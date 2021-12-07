@@ -82,7 +82,7 @@ exports.changePassword = async (req, res) => {
         const user = req.user;
         user.password = password;
         await user.save();
-        return res.sendStatus(200);
+        return res.sendStatus(204);
     } else {
         return res.status(422).send({ errorMessages });
     }
@@ -108,7 +108,7 @@ exports.forgotPassword = async (req, res) => {
         console.log(err);
         return res.sendStatus(500);
     }
-    return res.sendStatus(200);
+    return res.sendStatus(204);
 }
 
 exports.resetPassword = async (req, res) => {
@@ -123,4 +123,50 @@ exports.resetPassword = async (req, res) => {
     }
     const token = await user.generateTempAuthToken();
     return res.status(200).send({ token });
+}
+
+exports.editPersonalInfo = async (req, res) => {
+
+    const { gender, height, weight } = req.body;
+    if (!gender || !height || !weight) {
+        return res.status(400).send({ error: "Invalid data" });
+    }
+    try {
+        const user = req.user;
+        user.gender = gender;
+        user.height = height;
+        user.weight = weight;
+        await user.save();
+        return res.sendStatus(204);
+    } catch (err) {
+        //console.log(err);
+        if (err.errors.gender) {
+            return res.status(422).send({ error: "Invalid option for gender. Valid options are: Male, Female, Other" });
+        }
+        return res.status(500).send({ error: "Something went wrong" });
+    }
+}
+
+exports.editAvatar = async (req, res) => {
+
+}
+
+exports.getAvatar = async (req, res) => {
+
+}
+
+exports.addStatistics = async (req, res) => {
+    const { totalTime, distance, caloriesBurned, averageSpeed, route } = req.body;
+    if (!totalTime || !distance || !caloriesBurned || !averageSpeed || !route) {
+        return res.status(400).send({ error: "Invalid data" });
+    }
+    try {
+        const user = req.user;
+        user.statistics.push({ totalTime, distance, caloriesBurned, averageSpeed, route });
+        await user.save();
+        return res.sendStatus(201);
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({ error: "Something went wrong" });
+    }
 }

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const route = require("../models/Route");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
@@ -6,8 +7,10 @@ const validator = require("validator");
 const statistics = new mongoose.Schema({
   totalTime: { type: Number, required: true },
   distance: { type: Number, required: true },
-  date: { type: Date, default: new Date(), },
-  //route: String //todo
+  caloriesBurned: { type: Number, required: true },
+  averageSpeed: { type: Number, required: true },
+  route: { type: [route], required: true },
+  date: { type: Date, default: new Date() }
 });
 
 const userSchema = mongoose.Schema({
@@ -29,13 +32,18 @@ const userSchema = mongoose.Schema({
     minLength: 6,
   },
   admin: { type: Boolean, default: false },
-  gender: String,
+  gender: {
+    type: String,
+    lowercase: true,
+    trim: true,
+    enum: ["male", "female", "other"]
+  },
   height: Number,
   weight: Number,
-  avatar: Buffer, //todo
+  avatarUrl: String,
   statistics: [statistics],
 
-  events: [mongoose.ObjectId],
+  events: [mongoose.Types.ObjectId],
   resetPasswordCode: String,
   resetPasswordExpires: Date
 });

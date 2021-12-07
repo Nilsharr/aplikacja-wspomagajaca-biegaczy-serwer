@@ -17,4 +17,12 @@ module.exports = (app) => {
     app.route('/users/forgot-password').post(users.forgotPassword);
 
     app.route('/users/reset-password/:code').post(users.resetPassword);
+
+    app.route('/users/personal').patch(auth, users.editPersonalInfo);
+
+    app.route('/users/avatar').patch(auth, users.editAvatar);
+
+    app.route('/users/avatar').get(auth, users.editAvatar);
+
+    app.route('/users/statistics').post(auth, users.addStatistics);
 };

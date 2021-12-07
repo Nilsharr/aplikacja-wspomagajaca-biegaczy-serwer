@@ -10,9 +10,9 @@ module.exports = (app) => {
 
     app.route('/events').get(auth, events.getEvents);
 
+    app.route('/events/user').get(auth, events.getUserEvents);
+
     app.route('/events/:id/join').post(auth, events.joinEvent);
 
     app.route('/events/:id/leave').delete(auth, events.leaveEvent);
 };
-
-// get user events?
