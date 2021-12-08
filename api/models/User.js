@@ -44,7 +44,7 @@ const userSchema = mongoose.Schema({
   age: { type: Number, min: 0, max: 300 },
   height: { type: Number, min: 0, max: 300 },
   weight: { type: Number, min: 0, max: 1000 },
-  avatarUrl: String,
+  avatar: { data: Buffer, contentType: String },
   statistics: [statistics],
 
   events: [mongoose.Types.ObjectId],

@@ -2,6 +2,12 @@ const _ = require("lodash");
 const User = require("../models/User");
 const Email = require("../../mails/Email");
 
+// 1 MB
+const MAX_FILE_SIZE = 1048576;
+// maybe save on disk instead of storing in memory?
+const multer = require('multer');
+const uploadFile = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_FILE_SIZE } }).single('avatar');
+
 // for tests
 exports.getUsers = async (req, res) => {
     const users = await User.find();
@@ -150,12 +156,59 @@ exports.editPersonalInfo = async (req, res) => {
 }
 
 exports.editAvatar = async (req, res) => {
-    // limit to 1 mb
+    uploadFile(req, res, async (err) => {
+        if (err) {
+            if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+                console.log(err);
+                return res.status(413).send({ error: "File too large" });
+            }
+            console.log(err);
+            return res.status(500).send({ error: "Something went wrong" });
+        }
+        else {
+            if (!req.file) {
+                return res.status(400).send({ error: "Invalid data" });
+            }
+            try {
+                const user = req.user;
+                user.avatar = { data: req.file.buffer, contentType: req.file.mimetype };
+                await user.save();
+                return res.sendStatus(201);
+            }
+            catch (err) {
+                console.log(err);
+                return res.status(500).send({ error: "Something went wrong" });
+            }
+        }
+    });
 }
 
-exports.getAvatar = async (req, res) => {
-
+exports.deleteAvatar = async (req, res) => {
+    const user = req.user;
+    user.avatar.data = undefined;
+    user.avatar.contentType = undefined;
+    await user.save();
+    return res.sendStatus(200);
 }
+
+
+/*exports.getAvatar = async (req, res) => {
+    const user = req.user;
+    try {
+        if (user.avatar.data && user.avatar.contentType) {
+            const b64 = Buffer.from(user.avatar.data).toString('base64');
+            const mimeType = user.avatar.contentType;
+
+            res.status(200).send(`<img src="data:${mimeType};base64,${b64}" />`);
+            //res.status(200).sendFile();
+        } else {
+            return res.sendStatus(404);
+        }
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({ error: "Something went wrong" });
+    }
+}*/
 
 //validate typeof number
 exports.addStatistics = async (req, res) => {
