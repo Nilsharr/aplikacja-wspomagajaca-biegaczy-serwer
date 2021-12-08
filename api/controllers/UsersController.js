@@ -127,28 +127,29 @@ exports.resetPassword = async (req, res) => {
 
 exports.editPersonalInfo = async (req, res) => {
 
-    const { gender, height, weight } = req.body;
-    if (!gender || !height || !weight) {
+    const { gender, age, height, weight } = req.body;
+    if (!gender || !age || !height || !weight) {
         return res.status(400).send({ error: "Invalid data" });
     }
     try {
         const user = req.user;
         user.gender = gender;
+        user.age = age;
         user.height = height;
         user.weight = weight;
         await user.save();
         return res.sendStatus(204);
     } catch (err) {
-        //console.log(err);
+        console.log(err);
         if (err.errors.gender) {
-            return res.status(422).send({ error: "Invalid option for gender. Valid options are: Male, Female, Other" });
+            return res.status(422).send({ error: "Invalid option for gender. Valid options are: male, female, other" });
         }
         return res.status(500).send({ error: "Something went wrong" });
     }
 }
 
 exports.editAvatar = async (req, res) => {
-
+    // limit to 1 mb
 }
 
 exports.getAvatar = async (req, res) => {

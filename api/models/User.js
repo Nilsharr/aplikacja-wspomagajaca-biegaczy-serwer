@@ -38,6 +38,7 @@ const userSchema = mongoose.Schema({
     trim: true,
     enum: ["male", "female", "other"]
   },
+  age: Number,
   height: Number,
   weight: Number,
   avatarUrl: String,
