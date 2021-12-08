@@ -1,8 +1,11 @@
+const _ = require("lodash");
 const mongoose = require("mongoose");
 const route = require("../models/Route");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
+
+const GENDER = ["male", "female", "other"];
 
 const statistics = new mongoose.Schema({
   totalTime: { type: Number, required: true },
@@ -36,11 +39,11 @@ const userSchema = mongoose.Schema({
     type: String,
     lowercase: true,
     trim: true,
-    enum: ["male", "female", "other"]
+    enum: GENDER
   },
-  age: Number,
-  height: Number,
-  weight: Number,
+  age: { type: Number, min: 0, max: 300 },
+  height: { type: Number, min: 0, max: 300 },
+  weight: { type: Number, min: 0, max: 1000 },
   avatarUrl: String,
   statistics: [statistics],
 
@@ -152,6 +155,35 @@ userSchema.statics.validateLogin = async (login, password) => {
 
   return { user, errorMessages };
 };
+
+userSchema.statics.validatePersonalInfo = (gender, age, height, weight) => {
+  const errorMessages = {};
+
+  if (!GENDER.includes(gender.toLowerCase())) {
+    errorMessages.invalidGender = "Invalid option for gender. Valid options are: male, female, other";
+  }
+  if (!_.isNumber(age)) {
+    errorMessages.invalidAge = "Age must be a number!";
+  }
+  else if (age < 0 || age > 300) {
+    errorMessages.invalidAge = "Age must be between 0 and 300!";
+  }
+
+  if (!_.isNumber(height)) {
+    errorMessages.invalidHeight = "Height must be a number!";
+  }
+  else if (height < 0 || height > 300) {
+    errorMessages.invalidHeight = "Height must be between 0 and 300!";
+  }
+
+  if (!_.isNumber(weight)) {
+    errorMessages.invalidWeight = "Weight must be a number!";
+  }
+  else if (weight < 0 || weight > 1000) {
+    errorMessages.invalidWeight = "Weight must be between 0 and 1000!";
+  }
+  return errorMessages;
+}
 
 const User = mongoose.model("User", userSchema);
 

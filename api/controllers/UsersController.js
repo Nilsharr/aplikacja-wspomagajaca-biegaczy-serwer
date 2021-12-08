@@ -126,25 +126,26 @@ exports.resetPassword = async (req, res) => {
 }
 
 exports.editPersonalInfo = async (req, res) => {
-
     const { gender, age, height, weight } = req.body;
     if (!gender || !age || !height || !weight) {
         return res.status(400).send({ error: "Invalid data" });
     }
-    try {
-        const user = req.user;
-        user.gender = gender;
-        user.age = age;
-        user.height = height;
-        user.weight = weight;
-        await user.save();
-        return res.sendStatus(204);
-    } catch (err) {
-        console.log(err);
-        if (err.errors.gender) {
-            return res.status(422).send({ error: "Invalid option for gender. Valid options are: male, female, other" });
+    const errorMessages = User.validatePersonalInfo(gender, age, height, weight);
+    if (_.isEmpty(errorMessages)) {
+        try {
+            const user = req.user;
+            user.gender = gender;
+            user.age = age;
+            user.height = height;
+            user.weight = weight;
+            await user.save();
+            return res.sendStatus(204);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send({ error: "Something went wrong" });
         }
-        return res.status(500).send({ error: "Something went wrong" });
+    } else {
+        return res.status(422).send({ errorMessages });
     }
 }
 
@@ -156,9 +157,11 @@ exports.getAvatar = async (req, res) => {
 
 }
 
+//validate typeof number
 exports.addStatistics = async (req, res) => {
     const { totalTime, distance, caloriesBurned, averageSpeed, route } = req.body;
-    if (!totalTime || !distance || !caloriesBurned || !averageSpeed || !route) {
+    if (!totalTime || !_.isNumber(totalTime) || !distance || !_.isNumber(distance)
+        || !caloriesBurned || !_.isNumber(caloriesBurned) || !averageSpeed || !_.isNumber(averageSpeed) || !route) {
         return res.status(400).send({ error: "Invalid data" });
     }
     try {

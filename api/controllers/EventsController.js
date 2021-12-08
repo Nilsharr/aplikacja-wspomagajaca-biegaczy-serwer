@@ -30,13 +30,21 @@ exports.editEvent = async (req, res) => {
         return res.status(403).send({ error: "You don't have required credentials" });
     }
     const event = req.body.event;
-    try {
-        await Event.updateOne({ _id: event._id }, event, { upsert: true, new: true, setDefaultsOnInsert: true });
-        return res.sendStatus(204);
+    if (!event) {
+        return res.status(400).send({ error: "Invalid data" });
     }
-    catch (err) {
-        console.log(err);
-        return res.status(500).send({ error: "Something went wrong" });
+    const errorMessages = Event.validateEvent(event.address, event.date, event.maxParticipants);
+    if (_.isEmpty(errorMessages)) {
+        try {
+            await Event.updateOne({ _id: event._id }, event, { upsert: true, new: true, setDefaultsOnInsert: true });
+            return res.sendStatus(204);
+        }
+        catch (err) {
+            console.log(err);
+            return res.status(500).send({ error: "Something went wrong" });
+        }
+    } else {
+        return res.status(422).send({ errorMessages });
     }
 };
 
@@ -61,6 +69,7 @@ exports.deleteEvent = async (req, res) => {
 exports.getEvents = async (req, res) => {
     const { page = 1, limit = 10, name, country, city } = req.query;
     let { sortBy = "date", dateStart, dateEnd } = req.query;
+    sortBy = sortBy.toLowerCase();
     sortBy = sortBy === "country" ? "address.country" : sortBy;
     sortBy = sortBy === "city" ? "address.city" : sortBy;
 
@@ -117,7 +126,7 @@ exports.joinEvent = async (req, res) => {
         return res.status(404).send({ error: "Event doesn't exist" });
     }
     try {
-        if (_.find(event.participants, user._id)) {
+        if (event.participants.includes(user._id)) {
             return res.status(422).send({ error: "You already joined this event" });
         }
         if (event.participants.length < event.maxParticipants) {
