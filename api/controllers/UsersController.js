@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const Email = require("../../mails/Email");
 
@@ -77,6 +78,26 @@ exports.login = async (req, res) => {
         return res.status(422).send({ errorMessages });
     }
 };
+
+exports.authenticateAndChangePassword = async (req, res) => {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        return res.status(400).send({ error: "Invalid data" });
+    }
+    const user = req.user;
+    const errorMessages = User.validatePassword(newPassword, confirmPassword);
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) {
+        errorMessages.passIncorrect = "Entered password is incorrect";
+    }
+    if (_.isEmpty(errorMessages)) {
+        user.password = newPassword;
+        await user.save();
+        return res.sendStatus(204);
+    } else {
+        return res.status(422).send({ errorMessages });
+    }
+}
 
 exports.changePassword = async (req, res) => {
     const { password, confirmPassword } = req.body;

@@ -12,6 +12,8 @@ module.exports = (app) => {
 
     app.route('/users/login').post(users.login);
 
+    app.route('/users/change-password-authenticated').patch(auth, users.authenticateAndChangePassword);
+
     app.route('/users/change-password').patch(auth, users.changePassword);
 
     app.route('/users/forgot-password').post(users.forgotPassword);

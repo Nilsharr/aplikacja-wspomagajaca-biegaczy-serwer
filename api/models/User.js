@@ -6,6 +6,9 @@ const jwt = require("jsonwebtoken");
 const validator = require("validator");
 
 const GENDER = ["male", "female", "other"];
+const maxAge = 100;
+const maxHeight = 250;
+const maxWeight = 250;
 
 const statistics = new mongoose.Schema({
   totalTime: { type: Number, required: true },
@@ -41,9 +44,9 @@ const userSchema = mongoose.Schema({
     trim: true,
     enum: GENDER
   },
-  age: { type: Number, min: 0, max: 300 },
-  height: { type: Number, min: 0, max: 300 },
-  weight: { type: Number, min: 0, max: 1000 },
+  age: { type: Number, min: 0, max: maxAge },
+  height: { type: Number, min: 0, max: maxHeight },
+  weight: { type: Number, min: 0, max: maxWeight },
   avatar: { data: Buffer, contentType: String },
   statistics: [statistics],
 
@@ -152,7 +155,6 @@ userSchema.statics.validateLogin = async (login, password) => {
       errorMessages.passwordInvalid = "Invalid login credentials";
     }
   }
-
   return { user, errorMessages };
 };
 
@@ -165,22 +167,22 @@ userSchema.statics.validatePersonalInfo = (gender, age, height, weight) => {
   if (!_.isNumber(age)) {
     errorMessages.invalidAge = "Age must be a number!";
   }
-  else if (age < 0 || age > 300) {
-    errorMessages.invalidAge = "Age must be between 0 and 300!";
+  else if (age < 0 || age > maxAge) {
+    errorMessages.invalidAge = `Age must be between 0 and ${maxAge}!`;
   }
 
   if (!_.isNumber(height)) {
     errorMessages.invalidHeight = "Height must be a number!";
   }
-  else if (height < 0 || height > 300) {
-    errorMessages.invalidHeight = "Height must be between 0 and 300!";
+  else if (height < 0 || height > maxHeight) {
+    errorMessages.invalidHeight = `Height must be between 0 and ${maxHeight}!`;
   }
 
   if (!_.isNumber(weight)) {
     errorMessages.invalidWeight = "Weight must be a number!";
   }
-  else if (weight < 0 || weight > 1000) {
-    errorMessages.invalidWeight = "Weight must be between 0 and 1000!";
+  else if (weight < 0 || weight > maxWeight) {
+    errorMessages.invalidWeight = `Weight must be between 0 and ${maxWeight}!`;
   }
   return errorMessages;
 }
