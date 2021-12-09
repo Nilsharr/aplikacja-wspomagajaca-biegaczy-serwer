@@ -85,11 +85,11 @@ exports.authenticateAndChangePassword = async (req, res) => {
         return res.status(400).send({ error: "Invalid data" });
     }
     const user = req.user;
-    const errorMessages = User.validatePassword(newPassword, confirmPassword);
     const match = await bcrypt.compare(currentPassword, user.password);
     if (!match) {
-        errorMessages.passIncorrect = "Entered password is incorrect";
+        return res.status(422).send({ errorMessages: { passIncorrect: "Entered password is incorrect" } });
     }
+    const errorMessages = User.validatePassword(newPassword, confirmPassword);
     if (_.isEmpty(errorMessages)) {
         user.password = newPassword;
         await user.save();
