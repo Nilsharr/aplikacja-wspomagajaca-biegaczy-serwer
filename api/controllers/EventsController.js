@@ -3,9 +3,6 @@ const mongoose = require("mongoose");
 const Event = require("../models/Event");
 
 exports.addEvent = async (req, res) => {
-    if (!req.user.admin) {
-        return res.status(403).send({ error: "You don't have required credentials" });
-    }
     const { name, details, address, date, maxParticipants, route } = req.body;
     if (!name || !address || !date || (!maxParticipants && maxParticipants != 0) || !route) {
         return res.status(400).send({ error: "Invalid data" });
@@ -26,9 +23,6 @@ exports.addEvent = async (req, res) => {
 };
 
 exports.editEvent = async (req, res) => {
-    if (!req.user.admin) {
-        return res.status(403).send({ error: "You don't have required credentials" });
-    }
     const event = req.body.event;
     if (!event) {
         return res.status(400).send({ error: "Invalid data" });
@@ -49,9 +43,6 @@ exports.editEvent = async (req, res) => {
 };
 
 exports.deleteEvent = async (req, res) => {
-    if (!req.user.admin) {
-        return res.status(403).send({ error: "You don't have required credentials" });
-    }
     const eventId = req.params.id;
     if (!eventId || !mongoose.isValidObjectId(eventId)) {
         return res.status(400).send({ error: "Invalid data" });

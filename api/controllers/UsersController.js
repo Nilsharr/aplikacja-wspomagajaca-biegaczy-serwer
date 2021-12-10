@@ -79,6 +79,30 @@ exports.login = async (req, res) => {
     }
 };
 
+exports.adminLogin = async (req, res) => {
+    const { login, password } = req.body;
+
+    if (!login || !password) {
+        return res.status(400).send({ error: "Invalid data" });
+    }
+
+    const { user, errorMessages } = await User.validateLogin(login, password);
+
+    if (_.isEmpty(errorMessages)) {
+        try {
+            if (!user.admin) {
+                return res.status(403).send({ errorMessages: { insufficientPrivileges: "You don't have required credentials" } });
+            }
+            const token = await user.generateAuthToken();
+            return res.status(200).send({ user, token });
+        } catch (err) {
+            return res.status(500).send({ error: "Something went wrong" });
+        }
+    } else {
+        return res.status(422).send({ errorMessages });
+    }
+};
+
 exports.authenticateAndChangePassword = async (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     if (!currentPassword || !newPassword || !confirmPassword) {

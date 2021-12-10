@@ -10,6 +10,8 @@ module.exports = (app) => {
 
     app.route('/users').post(users.createUser);
 
+    app.route('/users/login-admin').post(users.adminLogin);
+
     app.route('/users/login').post(users.login);
 
     app.route('/users/change-password-authenticated').patch(auth, users.authenticateAndChangePassword);
