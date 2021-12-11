@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "mocha --timeout 100000",
-    "start": ""
+    "start": "env-cmd -f ./.env nodemon server.js"
   },
   "author": "",
   "license": "ISC",

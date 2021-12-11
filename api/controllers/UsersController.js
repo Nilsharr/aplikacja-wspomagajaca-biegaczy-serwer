@@ -243,9 +243,7 @@ exports.getAvatar = async (req, res) => {
         if (user.avatar.data && user.avatar.contentType) {
             const b64 = Buffer.from(user.avatar.data).toString('base64');
             const mimeType = user.avatar.contentType;
-
-            res.status(200).send(`<img src="data:${mimeType};base64,${b64}" />`);
-            //res.status(200).sendFile();
+            res.status(200).send(`data:${mimeType};base64,${b64}`);
         } else {
             return res.sendStatus(404);
         }
