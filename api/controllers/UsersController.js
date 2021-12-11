@@ -237,7 +237,7 @@ exports.deleteAvatar = async (req, res) => {
 }
 
 
-/*exports.getAvatar = async (req, res) => {
+exports.getAvatar = async (req, res) => {
     const user = req.user;
     try {
         if (user.avatar.data && user.avatar.contentType) {
@@ -253,7 +253,7 @@ exports.deleteAvatar = async (req, res) => {
         console.log(err);
         return res.status(500).send({ error: "Something went wrong" });
     }
-}*/
+}
 
 //validate typeof number
 exports.addStatistics = async (req, res) => {
