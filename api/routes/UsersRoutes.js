@@ -28,7 +28,5 @@ module.exports = (app) => {
 
     app.route('/users/avatar').delete(auth, users.deleteAvatar);
 
-    app.route('/users/avatar').get(auth, users.getAvatar);
-
     app.route('/users/statistics').post(auth, users.addStatistics);
 };

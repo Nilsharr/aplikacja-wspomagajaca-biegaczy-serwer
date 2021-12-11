@@ -236,23 +236,6 @@ exports.deleteAvatar = async (req, res) => {
     return res.sendStatus(200);
 }
 
-
-exports.getAvatar = async (req, res) => {
-    const user = req.user;
-    try {
-        if (user.avatar.data && user.avatar.contentType) {
-            const b64 = Buffer.from(user.avatar.data).toString('base64');
-            const mimeType = user.avatar.contentType;
-            res.status(200).send(`data:${mimeType};base64,${b64}`);
-        } else {
-            return res.sendStatus(404);
-        }
-    } catch (err) {
-        console.log(err);
-        return res.status(500).send({ error: "Something went wrong" });
-    }
-}
-
 //validate typeof number
 exports.addStatistics = async (req, res) => {
     const { totalTime, distance, caloriesBurned, averageSpeed, route } = req.body;
