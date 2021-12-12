@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const mongoose = require("mongoose");
 const route = require("../models/Route");
 
@@ -44,13 +45,13 @@ eventSchema.statics.validateEvent = (
     const errorMessages = {};
     const userDate = new Date(date);
 
-    if (_.isUndefined(address.country)) {
+    if (_.isNil(address.country)) {
         errorMessages.lacksCountry = "You must specify country";
     }
-    if (_.isUndefined(address.city)) {
+    if (_.isNil(address.city)) {
         errorMessages.lacksCity = "You must specify city";
     }
-    if (_.isUndefined(address.street)) {
+    if (_.isNil(address.street)) {
         errorMessages.lacksStreet = "You must specify street";
     }
     if (!(userDate instanceof Date && !isNaN(userDate))) {
