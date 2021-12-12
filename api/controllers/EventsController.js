@@ -4,7 +4,8 @@ const Event = require("../models/Event");
 
 exports.addEvent = async (req, res) => {
     const { name, details, address, date, maxParticipants, route } = req.body;
-    if (!name || !address || !date || (!maxParticipants && maxParticipants != 0) || !route) {
+    if (_.isUndefined(name) || _.isUndefined(address) || _.isUndefined(date)
+        || _.isUndefined(maxParticipants) || _.isUndefined(route)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     const errorMessages = Event.validateEvent(address, date, maxParticipants);
@@ -24,7 +25,7 @@ exports.addEvent = async (req, res) => {
 
 exports.editEvent = async (req, res) => {
     const event = req.body.event;
-    if (!event) {
+    if (_.isUndefined(event)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     const errorMessages = Event.validateEvent(event.address, event.date, event.maxParticipants);
@@ -44,7 +45,7 @@ exports.editEvent = async (req, res) => {
 
 exports.deleteEvent = async (req, res) => {
     const eventId = req.params.id;
-    if (!eventId || !mongoose.isValidObjectId(eventId)) {
+    if (_.isUndefined(eventId) || !mongoose.isValidObjectId(eventId)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     try {
@@ -109,11 +110,11 @@ exports.getUserEvents = async (req, res) => {
 exports.joinEvent = async (req, res) => {
     const eventId = req.params.id;
     const user = req.user;
-    if (!eventId || !mongoose.isValidObjectId(eventId)) {
+    if (_.isUndefined(eventId) || !mongoose.isValidObjectId(eventId)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     const event = await Event.findOne({ _id: req.params.id });
-    if (!event) {
+    if (_.isUndefined(event)) {
         return res.status(404).send({ error: "Event doesn't exist" });
     }
     try {
@@ -138,11 +139,11 @@ exports.joinEvent = async (req, res) => {
 exports.leaveEvent = async (req, res) => {
     const eventId = req.params.id;
     const user = req.user;
-    if (!eventId || !mongoose.isValidObjectId(eventId)) {
+    if (_.isUndefined(eventId) || !mongoose.isValidObjectId(eventId)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     const event = await Event.findOne({ _id: req.params.id });
-    if (!event) {
+    if (_.isUndefined(event)) {
         return res.status(404).send({ error: "Event doesn't exist" });
     }
     try {

@@ -44,13 +44,13 @@ eventSchema.statics.validateEvent = (
     const errorMessages = {};
     const userDate = new Date(date);
 
-    if (!address.country) {
+    if (_.isUndefined(address.country)) {
         errorMessages.lacksCountry = "You must specify country";
     }
-    if (!address.city) {
+    if (_.isUndefined(address.city)) {
         errorMessages.lacksCity = "You must specify city";
     }
-    if (!address.street) {
+    if (_.isUndefined(address.street)) {
         errorMessages.lacksStreet = "You must specify street";
     }
     if (!(userDate instanceof Date && !isNaN(userDate))) {

@@ -5,7 +5,7 @@ const authentication = async (req, res, next) => {
   const { authorization } = req.headers;
 
   // Auth is not provided
-  if (!authorization) {
+  if (_.isUndefined(authorization)) {
     return res.status(401).send({ error: "You must be logged in!" });
   }
 
@@ -19,7 +19,7 @@ const authentication = async (req, res, next) => {
     // Accessing decoded _id
     const { _id } = payload;
     const user = await User.findById(_id);
-    if (!user) {
+    if (_.isUndefined(user)) {
       return res.status(401).send({ error: "You must be logged in!" });
     }
     req.user = user;

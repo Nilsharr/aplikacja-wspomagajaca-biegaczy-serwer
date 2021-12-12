@@ -83,7 +83,7 @@ userSchema.methods.generatePasswordResetCode = async function () {
 
 userSchema.statics.findByCredentials = async (login, email, password) => {
   const user = await User.findOne({ $or: [{ login }, { email }] });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
+  if (_.isUndefined(user) || !(await bcrypt.compare(password, user.password))) {
     throw new Error({ error: "Invalid login credentials" });
   }
   return user;
@@ -145,13 +145,13 @@ userSchema.statics.validateLogin = async (login, password) => {
     user = await User.findOne({ email: login });
   }
 
-  if (!user) {
+  if (_.isUndefined(user)) {
     // User doesn't exist
     errorMessages.loginInvalid = "Invalid login credentials";
   } else {
     const match = await bcrypt.compare(password, user.password);
     // Passwords doesn't match
-    if (!match) {
+    if (_.isUndefined(match)) {
       errorMessages.passwordInvalid = "Invalid login credentials";
     }
   }

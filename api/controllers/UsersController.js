@@ -7,6 +7,7 @@ const Email = require("../../mails/Email");
 const MAX_FILE_SIZE = 1048576;
 // maybe save on disk instead of storing in memory?
 const multer = require('multer');
+const { isUndefined } = require("lodash");
 const uploadFile = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_FILE_SIZE } }).single('avatar');
 
 // for tests
@@ -32,7 +33,7 @@ exports.getMe = (req, res) => {
 exports.createUser = async (req, res) => {
     // Destructuring props and initializing errorMessages
     const { login, email, password, confirmPassword } = req.body;
-    if (!login || !email || !password || !confirmPassword) {
+    if (_.isUndefined(login) || _.isUndefined(email) || _.isUndefined(password) || _.isUndefined(confirmPassword)) {
         return res.status(400).send({ error: "Invalid data" });
     }
 
@@ -61,7 +62,7 @@ exports.createUser = async (req, res) => {
 exports.login = async (req, res) => {
     const { login, password } = req.body;
 
-    if (!login || !password) {
+    if (_.isUndefined(login) || _.isUndefined(password)) {
         return res.status(400).send({ error: "Invalid data" });
     }
 
@@ -82,7 +83,7 @@ exports.login = async (req, res) => {
 exports.adminLogin = async (req, res) => {
     const { login, password } = req.body;
 
-    if (!login || !password) {
+    if (_.isUndefined(login) || _.isUndefined(password)) {
         return res.status(400).send({ error: "Invalid data" });
     }
 
@@ -90,7 +91,7 @@ exports.adminLogin = async (req, res) => {
 
     if (_.isEmpty(errorMessages)) {
         try {
-            if (!user.admin) {
+            if (_.isUndefined(user.admin)) {
                 return res.status(403).send({ errorMessages: { insufficientPrivileges: "You don't have required credentials" } });
             }
             const token = await user.generateAuthToken();
@@ -105,12 +106,12 @@ exports.adminLogin = async (req, res) => {
 
 exports.authenticateAndChangePassword = async (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
-    if (!currentPassword || !newPassword || !confirmPassword) {
+    if (_.isUndefined(currentPassword) || _.isUndefined(newPassword) || _.isUndefined(confirmPassword)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     const user = req.user;
     const match = await bcrypt.compare(currentPassword, user.password);
-    if (!match) {
+    if (_.isUndefined(match)) {
         return res.status(422).send({ errorMessages: { passIncorrect: "Entered password is incorrect" } });
     }
     const errorMessages = User.validatePassword(newPassword, confirmPassword);
@@ -125,7 +126,7 @@ exports.authenticateAndChangePassword = async (req, res) => {
 
 exports.changePassword = async (req, res) => {
     const { password, confirmPassword } = req.body;
-    if (!password || !confirmPassword) {
+    if (_.isUndefined(password) || _.isUndefined(confirmPassword)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     const errorMessages = User.validatePassword(password, confirmPassword);
@@ -141,11 +142,11 @@ exports.changePassword = async (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
     const email = req.body.email;
-    if (!email) {
+    if (_.isUndefined(email)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     const user = await User.findOne({ email });
-    if (!user) {
+    if (_.isUndefined(user)) {
         return res.status(404).send({ error: "User with given email doesn't exist" });
     }
     await user.generatePasswordResetCode();
@@ -165,11 +166,11 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     const email = req.body.email;
     const code = req.params.code;
-    if (!code || !email) {
+    if (_.isUndefined(code) || _.isUndefined(email)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     const user = await User.findOne({ email: email, resetPasswordCode: code, resetPasswordExpires: { $gt: new Date() } });
-    if (!user) {
+    if (_.isUndefined(user)) {
         return res.status(422).send({ error: "Invalid or expired code" });
     }
     const token = await user.generateTempAuthToken();
@@ -178,7 +179,7 @@ exports.resetPassword = async (req, res) => {
 
 exports.editPersonalInfo = async (req, res) => {
     const { gender, age, height, weight } = req.body;
-    if (!gender || !age || !height || !weight) {
+    if (_.isUndefined(gender) || _.isUndefined(age) || _.isUndefined(height) || _.isUndefined(weight)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     const errorMessages = User.validatePersonalInfo(gender, age, height, weight);
@@ -211,7 +212,7 @@ exports.editAvatar = async (req, res) => {
             return res.status(500).send({ error: "Something went wrong" });
         }
         else {
-            if (!req.file) {
+            if (_.isUndefined(req.file)) {
                 return res.status(400).send({ error: "Invalid data" });
             }
             try {
@@ -239,8 +240,9 @@ exports.deleteAvatar = async (req, res) => {
 //validate typeof number
 exports.addStatistics = async (req, res) => {
     const { totalTime, distance, caloriesBurned, averageSpeed, route } = req.body;
-    if (!totalTime || !_.isNumber(totalTime) || !distance || !_.isNumber(distance)
-        || !caloriesBurned || !_.isNumber(caloriesBurned) || !averageSpeed || !_.isNumber(averageSpeed) || !route) {
+    if (_.isUndefined(totalTime) || !_.isNumber(totalTime) || _.isUndefined(distance) || !_.isNumber(distance)
+        || _.isUndefined(caloriesBurned) || !_.isNumber(caloriesBurned)
+        || _.isUndefined(averageSpeed) || !_.isNumber(averageSpeed) || _.isUndefined(route)) {
         return res.status(400).send({ error: "Invalid data" });
     }
     try {
