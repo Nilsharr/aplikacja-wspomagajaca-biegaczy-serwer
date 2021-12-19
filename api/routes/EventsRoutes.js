@@ -11,6 +11,8 @@ module.exports = (app) => {
 
     app.route('/events').get(auth, events.getEvents);
 
+    app.route('/events/:id').get(auth, events.getEvent);
+
     app.route('/events/user').get(auth, events.getUserEvents);
 
     app.route('/events/:id/join').post(auth, events.joinEvent);

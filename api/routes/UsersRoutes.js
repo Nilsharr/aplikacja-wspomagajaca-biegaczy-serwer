@@ -10,6 +10,8 @@ module.exports = (app) => {
 
     app.route('/users').post(users.createUser);
 
+    app.route('/users/verify-token').post(users.verifyToken);
+
     app.route('/users/login-admin').post(users.adminLogin);
 
     app.route('/users/login').post(users.login);

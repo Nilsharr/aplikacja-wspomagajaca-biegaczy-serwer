@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const Email = require("../../mails/Email");
@@ -96,12 +97,32 @@ exports.adminLogin = async (req, res) => {
             const token = await user.generateAuthToken();
             return res.status(200).send({ user, token });
         } catch (err) {
+            console.log(err);
             return res.status(500).send({ error: "Something went wrong" });
         }
     } else {
         return res.status(422).send({ errorMessages });
     }
 };
+
+exports.verifyToken = async (req, res) => {
+    const { token } = req.body;
+    if (_.isNil(token)) {
+        return res.status(400).send({ error: "Invalid data" });
+    }
+    try {
+        jwt.verify(token, process.env.JWT_KEY, error => {
+            if (error) {
+                return res.status(200).send({ isValid: false });
+            } else {
+                return res.status(200).send({ isValid: true });
+            }
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({ error: "Something went wrong" });
+    }
+}
 
 exports.authenticateAndChangePassword = async (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;

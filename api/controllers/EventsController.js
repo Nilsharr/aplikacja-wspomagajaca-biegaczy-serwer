@@ -58,16 +58,35 @@ exports.deleteEvent = async (req, res) => {
     }
 };
 
+exports.getEvent = async (req, res) => {
+    const eventId = req.params.id;
+    if (_.isNil(eventId) || !mongoose.isValidObjectId(eventId)) {
+        return res.status(400).send({ error: "Invalid data" });
+    }
+    try {
+        const event = await Event.findOne({ _id: eventId })
+        if (_.isNil(event)) {
+            return res.sendStatus(404);
+        }
+        return res.status(200).send(event);
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({ error: "Something went wrong" });
+    }
+};
+
 exports.getEvents = async (req, res) => {
     const { page = 1, limit = 10, name, country, city } = req.query;
-    let { sortBy = "date", dateStart, dateEnd } = req.query;
+    let { sortBy = "name", dateStart, dateEnd } = req.query;
     sortBy = sortBy.toLowerCase();
     sortBy = sortBy === "country" ? "address.country" : sortBy;
     sortBy = sortBy === "city" ? "address.city" : sortBy;
 
     const query = {};
     if (name) {
-        query.name = { $regex: name, $options: 'i' };
+        // search by name or city
+        query["$or"] = [{ name: { $regex: name, $options: 'i' } }, { "address.city": { $regex: name, $options: 'i' } }];
+        //query.name = { $regex: name, $options: 'i' };
     }
     if (country) {
         query["address.country"] = { $in: country };
@@ -87,10 +106,11 @@ exports.getEvents = async (req, res) => {
     try {
         const events = await Event.find(query)
             .limit(limit)
+            .collation({ locale: 'en' })
             .sort(sortBy)
             .skip((page - 1) * limit)
             .exec();
-        return res.status(200).json(events);
+        return res.status(200).send(events);
     } catch (err) {
         console.log(err);
         return res.status(500).send({ error: "Something went wrong" });
