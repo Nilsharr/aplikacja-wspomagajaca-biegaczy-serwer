@@ -76,7 +76,7 @@ exports.login = async (req, res) => {
             return res.status(500).send({ error: "Something went wrong" });
         }
     } else {
-        return res.status(422).send({ errorMessages });
+        return res.status(401).send({ errorMessages });
     }
 };
 
@@ -101,7 +101,7 @@ exports.adminLogin = async (req, res) => {
             return res.status(500).send({ error: "Something went wrong" });
         }
     } else {
-        return res.status(422).send({ errorMessages });
+        return res.status(401).send({ errorMessages });
     }
 };
 
@@ -132,7 +132,7 @@ exports.authenticateAndChangePassword = async (req, res) => {
     const user = req.user;
     const match = await bcrypt.compare(currentPassword, user.password);
     if (!match) {
-        return res.status(422).send({ errorMessages: { passIncorrect: "Entered password is incorrect" } });
+        return res.status(401).send({ errorMessages: { passIncorrect: "Entered password is incorrect" } });
     }
     const errorMessages = User.validatePassword(newPassword, confirmPassword);
     if (_.isEmpty(errorMessages)) {
