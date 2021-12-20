@@ -30,5 +30,9 @@ module.exports = (app) => {
 
     app.route('/users/avatar').delete(auth, users.deleteAvatar);
 
+    app.route('/users/events').get(auth, users.getUserEvents);
+
+    app.route('/users/:id/events').get(auth, users.getUserEventsById);
+
     app.route('/users/statistics').post(auth, users.addStatistics);
 };

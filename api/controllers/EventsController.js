@@ -2,11 +2,14 @@ const _ = require("lodash");
 const mongoose = require("mongoose");
 const Event = require("../models/Event");
 
+const genericError = "Something went wrong";
+const invalidDataError = "Invalid data";
+
 exports.addEvent = async (req, res) => {
     const { name, details, address, date, maxParticipants, route } = req.body;
     if (_.isNil(name) || _.isNil(address) || _.isNil(date)
         || _.isNil(maxParticipants) || _.isNil(route)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     const errorMessages = Event.validateEvent(address, date, maxParticipants);
     if (_.isEmpty(errorMessages)) {
@@ -16,7 +19,7 @@ exports.addEvent = async (req, res) => {
             // maybe set location - res.location(`/events/${event._id}`);         
             return res.sendStatus(201);
         } catch (err) {
-            return res.status(500).send({ error: "Something went wrong" });
+            return res.status(500).send({ error: genericError });
         }
     } else {
         return res.status(422).send({ errorMessages });
@@ -26,7 +29,7 @@ exports.addEvent = async (req, res) => {
 exports.editEvent = async (req, res) => {
     const event = req.body.event;
     if (_.isNil(event)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     const errorMessages = Event.validateEvent(event.address, event.date, event.maxParticipants);
     if (_.isEmpty(errorMessages)) {
@@ -36,7 +39,7 @@ exports.editEvent = async (req, res) => {
         }
         catch (err) {
             console.log(err);
-            return res.status(500).send({ error: "Something went wrong" });
+            return res.status(500).send({ error: genericError });
         }
     } else {
         return res.status(422).send({ errorMessages });
@@ -46,7 +49,7 @@ exports.editEvent = async (req, res) => {
 exports.deleteEvent = async (req, res) => {
     const eventId = req.params.id;
     if (_.isNil(eventId) || !mongoose.isValidObjectId(eventId)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     try {
         await Event.deleteOne({ _id: eventId });
@@ -54,14 +57,14 @@ exports.deleteEvent = async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        return res.status(500).send({ error: "Something went wrong" });
+        return res.status(500).send({ error: genericError });
     }
 };
 
 exports.getEvent = async (req, res) => {
     const eventId = req.params.id;
     if (_.isNil(eventId) || !mongoose.isValidObjectId(eventId)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     try {
         const event = await Event.findOne({ _id: eventId })
@@ -71,7 +74,7 @@ exports.getEvent = async (req, res) => {
         return res.status(200).send(event);
     } catch (err) {
         console.log(err);
-        return res.status(500).send({ error: "Something went wrong" });
+        return res.status(500).send({ error: genericError });
     }
 };
 
@@ -113,25 +116,15 @@ exports.getEvents = async (req, res) => {
         return res.status(200).send(events);
     } catch (err) {
         console.log(err);
-        return res.status(500).send({ error: "Something went wrong" });
+        return res.status(500).send({ error: genericError });
     }
 };
-
-exports.getUserEvents = async (req, res) => {
-    try {
-        const events = await Event.find({ participants: req.user._id });
-        return res.status(200).json(events);
-    } catch (err) {
-        console.log(err);
-        return res.status(500).send({ error: "Something went wrong" });
-    }
-}
 
 exports.joinEvent = async (req, res) => {
     const eventId = req.params.id;
     const user = req.user;
     if (_.isNil(eventId) || !mongoose.isValidObjectId(eventId)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     const event = await Event.findOne({ _id: req.params.id });
     if (_.isNil(event)) {
@@ -152,7 +145,7 @@ exports.joinEvent = async (req, res) => {
         }
     } catch (err) {
         console.log(err);
-        return res.status(500).send({ error: "Something went wrong" });
+        return res.status(500).send({ error: genericError });
     }
 };
 
@@ -160,7 +153,7 @@ exports.leaveEvent = async (req, res) => {
     const eventId = req.params.id;
     const user = req.user;
     if (_.isNil(eventId) || !mongoose.isValidObjectId(eventId)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     const event = await Event.findOne({ _id: req.params.id });
     if (_.isNil(event)) {
@@ -174,6 +167,6 @@ exports.leaveEvent = async (req, res) => {
         return res.sendStatus(204);
     } catch (err) {
         console.log(err);
-        return res.status(500).send({ error: "Something went wrong" });
+        return res.status(500).send({ error: genericError });
     }
 };

@@ -1,8 +1,13 @@
 const _ = require("lodash");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const mongoose = require("mongoose");
 const User = require("../models/User");
+const Event = require("../models/Event");
 const Email = require("../../mails/Email");
+
+const genericError = "Something went wrong";
+const invalidDataError = "Invalid data";
 
 // 1 MB
 const MAX_FILE_SIZE = 1048576;
@@ -34,7 +39,7 @@ exports.createUser = async (req, res) => {
     // Destructuring props and initializing errorMessages
     const { login, email, password, confirmPassword } = req.body;
     if (_.isNil(login) || _.isNil(email) || _.isNil(password) || _.isNil(confirmPassword)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
 
     // Validation
@@ -52,7 +57,7 @@ exports.createUser = async (req, res) => {
             const token = await user.generateAuthToken();
             return res.status(201).send({ user, token });
         } catch (err) {
-            return res.status(500).send({ error: "Something went wrong" });
+            return res.status(500).send({ error: genericError });
         }
     } else {
         return res.status(422).send({ errorMessages });
@@ -63,7 +68,7 @@ exports.login = async (req, res) => {
     const { login, password } = req.body;
 
     if (_.isNil(login) || _.isNil(password)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
 
     const { user, errorMessages } = await User.validateLogin(login, password);
@@ -73,7 +78,7 @@ exports.login = async (req, res) => {
             const token = await user.generateAuthToken();
             return res.status(200).send({ user, token });
         } catch (err) {
-            return res.status(500).send({ error: "Something went wrong" });
+            return res.status(500).send({ error: genericError });
         }
     } else {
         return res.status(401).send({ errorMessages });
@@ -84,7 +89,7 @@ exports.adminLogin = async (req, res) => {
     const { login, password } = req.body;
 
     if (_.isNil(login) || _.isNil(password)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
 
     const { user, errorMessages } = await User.validateLogin(login, password);
@@ -98,7 +103,7 @@ exports.adminLogin = async (req, res) => {
             return res.status(200).send({ user, token });
         } catch (err) {
             console.log(err);
-            return res.status(500).send({ error: "Something went wrong" });
+            return res.status(500).send({ error: genericError });
         }
     } else {
         return res.status(401).send({ errorMessages });
@@ -108,7 +113,7 @@ exports.adminLogin = async (req, res) => {
 exports.verifyToken = async (req, res) => {
     const { token } = req.body;
     if (_.isNil(token)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     try {
         jwt.verify(token, process.env.JWT_KEY, error => {
@@ -120,14 +125,14 @@ exports.verifyToken = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
-        return res.status(500).send({ error: "Something went wrong" });
+        return res.status(500).send({ error: genericError });
     }
 }
 
 exports.authenticateAndChangePassword = async (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     if (_.isNil(currentPassword) || _.isNil(newPassword) || _.isNil(confirmPassword)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     const user = req.user;
     const match = await bcrypt.compare(currentPassword, user.password);
@@ -147,7 +152,7 @@ exports.authenticateAndChangePassword = async (req, res) => {
 exports.changePassword = async (req, res) => {
     const { password, confirmPassword } = req.body;
     if (_.isNil(password) || _.isNil(confirmPassword)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     const errorMessages = User.validatePassword(password, confirmPassword);
     if (_.isEmpty(errorMessages)) {
@@ -163,7 +168,7 @@ exports.changePassword = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
     const email = req.body.email;
     if (_.isNil(email)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     const user = await User.findOne({ email });
     if (_.isNil(user)) {
@@ -187,7 +192,7 @@ exports.resetPassword = async (req, res) => {
     const email = req.body.email;
     const code = req.params.code;
     if (_.isNil(code) || _.isNil(email)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     const user = await User.findOne({ email: email, resetPasswordCode: code, resetPasswordExpires: { $gt: new Date() } });
     if (_.isNil(user)) {
@@ -200,7 +205,7 @@ exports.resetPassword = async (req, res) => {
 exports.editPersonalInfo = async (req, res) => {
     const { gender, age, height, weight } = req.body;
     if (_.isNil(gender) || _.isNil(age) || _.isNil(height) || _.isNil(weight)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     const errorMessages = User.validatePersonalInfo(gender, age, height, weight);
     if (_.isEmpty(errorMessages)) {
@@ -214,7 +219,7 @@ exports.editPersonalInfo = async (req, res) => {
             return res.sendStatus(204);
         } catch (err) {
             console.log(err);
-            return res.status(500).send({ error: "Something went wrong" });
+            return res.status(500).send({ error: genericError });
         }
     } else {
         return res.status(422).send({ errorMessages });
@@ -229,11 +234,11 @@ exports.editAvatar = async (req, res) => {
                 return res.status(413).send({ error: "File too large" });
             }
             console.log(err);
-            return res.status(500).send({ error: "Something went wrong" });
+            return res.status(500).send({ error: genericError });
         }
         else {
             if (_.isNil(req.file)) {
-                return res.status(400).send({ error: "Invalid data" });
+                return res.status(400).send({ error: invalidDataError });
             }
             try {
                 const user = req.user;
@@ -243,7 +248,7 @@ exports.editAvatar = async (req, res) => {
             }
             catch (err) {
                 console.log(err);
-                return res.status(500).send({ error: "Something went wrong" });
+                return res.status(500).send({ error: genericError });
             }
         }
     });
@@ -257,13 +262,36 @@ exports.deleteAvatar = async (req, res) => {
     return res.sendStatus(200);
 }
 
-//validate typeof number
+exports.getUserEvents = async (req, res) => {
+    try {
+        const events = await Event.find({ participants: req.user._id });
+        return res.status(200).json(events);
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({ error: genericError });
+    }
+}
+
+exports.getUserEventsById = async (req, res) => {
+    const userId = req.params.id;
+    if (_.isNil(userId) || !mongoose.isValidObjectId(userId)) {
+        return res.status(400).send({ error: invalidDataError });
+    }
+    try {
+        const events = await Event.find({ participants: userId });
+        return res.status(200).json(events);
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({ error: genericError });
+    }
+}
+
 exports.addStatistics = async (req, res) => {
     const { totalTime, distance, caloriesBurned, averageSpeed, route } = req.body;
     if (_.isNil(totalTime) || !_.isNumber(totalTime) || _.isNil(distance) || !_.isNumber(distance)
         || _.isNil(caloriesBurned) || !_.isNumber(caloriesBurned)
         || _.isNil(averageSpeed) || !_.isNumber(averageSpeed) || _.isNil(route)) {
-        return res.status(400).send({ error: "Invalid data" });
+        return res.status(400).send({ error: invalidDataError });
     }
     try {
         const user = req.user;
@@ -272,6 +300,6 @@ exports.addStatistics = async (req, res) => {
         return res.sendStatus(201);
     } catch (err) {
         console.log(err);
-        return res.status(500).send({ error: "Something went wrong" });
+        return res.status(500).send({ error: genericError });
     }
 }
