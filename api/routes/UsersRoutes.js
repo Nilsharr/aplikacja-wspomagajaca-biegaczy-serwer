@@ -2,13 +2,11 @@ const auth = require('../middleware/Authentication');
 const users = require('../controllers/UsersController');
 
 module.exports = (app) => {
-    // test only
-    app.route('/users').get(users.getUsers);
-    app.route('/test').get(users.getTest);
+    app.route('/users').post(users.createUser);
 
     app.route('/users/me').get(auth, users.getMe);
 
-    app.route('/users').post(users.createUser);
+    app.route('/users').get(auth, users.getUsers);
 
     app.route('/users/verify-token').post(users.verifyToken);
 

@@ -5,13 +5,13 @@ const events = require('../controllers/EventsController');
 module.exports = (app) => {
     app.route('/events').post(auth, admin, events.addEvent);
 
-    app.route('/events/:id').put(auth, admin, events.editEvent);
-
-    app.route('/events/:id').delete(auth, admin, events.deleteEvent);
-
     app.route('/events').get(auth, events.getEvents);
 
     app.route('/events/:id').get(auth, events.getEvent);
+
+    app.route('/events/:id').put(auth, admin, events.editEvent);
+
+    app.route('/events/:id').delete(auth, admin, events.deleteEvent);
 
     app.route('/events/:id/join').post(auth, events.joinEvent);
 

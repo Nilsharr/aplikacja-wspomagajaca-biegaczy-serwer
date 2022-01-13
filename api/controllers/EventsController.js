@@ -17,7 +17,7 @@ exports.addEvent = async (req, res) => {
             const event = new Event({ name, details, address, date, maxParticipants, route });
             await event.save();
             // maybe set location - res.location(`/events/${event._id}`);         
-            return res.sendStatus(201);
+            return res.status(201).send(event);
         } catch (err) {
             return res.status(500).send({ error: genericError });
         }

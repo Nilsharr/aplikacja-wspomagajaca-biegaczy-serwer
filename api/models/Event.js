@@ -57,7 +57,7 @@ eventSchema.statics.validateEvent = (
     if (!(userDate instanceof Date && !isNaN(userDate))) {
         errorMessages.invalidDate = "Invalid date format";
     }
-    if (userDate.toISOString().substring(0, 10) < new Date().addDays(1).toISOString().substring(0, 10)) {
+    else if (userDate.toISOString().substring(0, 10) < new Date().addDays(1).toISOString().substring(0, 10)) {
         errorMessages.invalidDate = "The event can take place tomorrow at the earliest";
     }
     if (maxParticipants < 1) {

@@ -230,10 +230,10 @@ exports.editAvatar = async (req, res) => {
     uploadFile(req, res, async (err) => {
         if (err) {
             if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
-                console.log(err);
+                //console.log(err);
                 return res.status(413).send({ error: "File too large" });
             }
-            console.log(err);
+            //console.log(err);
             return res.status(500).send({ error: genericError });
         }
         else {
@@ -247,7 +247,7 @@ exports.editAvatar = async (req, res) => {
                 return res.sendStatus(201);
             }
             catch (err) {
-                console.log(err);
+                //console.log(err);
                 return res.status(500).send({ error: genericError });
             }
         }
@@ -256,8 +256,8 @@ exports.editAvatar = async (req, res) => {
 
 exports.deleteAvatar = async (req, res) => {
     const user = req.user;
-    user.avatar.data = undefined;
-    user.avatar.contentType = undefined;
+    user.avatar.data = null;
+    user.avatar.contentType = null;
     await user.save();
     return res.sendStatus(200);
 }
