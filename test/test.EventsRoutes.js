@@ -170,6 +170,11 @@ describe('Test events routes', function () {
         await User.deleteMany({});
         await Event.deleteMany({});
     });
+
+    after(function () {
+        // need to disconnect mongoose after all tests
+        mongoose.disconnect();
+    });
     //#endregion
 
     describe("Test /events POST", function () {

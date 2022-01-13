@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "env-cmd -e test mocha --timeout 10000",
+    "test": "env-cmd -e test mocha --file ./test/test.UsersRoutes.js --file ./test/test.EventsRoutes.js --timeout 10000",
     "start": ""
   },
   "author": "",
